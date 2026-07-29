@@ -1,0 +1,32 @@
+name: Seahawks ticket alerts
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  track-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check ticket sources and email new deals
+        env:
+          ALERT_MAX_PRICE: ${{ secrets.ALERT_MAX_PRICE }}
+          SMTP_HOST: smtp.gmail.com
+          SMTP_USER: ${{ secrets.GMAIL_ADDRESS }}
+          SMTP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          ALERT_TO: ${{ secrets.ALERT_TO }}
+          TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
+          SEATGEEK_CLIENT_ID: ${{ secrets.SEATGEEK_CLIENT_ID }}
+        run: python tracker.py
+      - name: Persist observed prices and alert history
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/state.json
+          git diff --cached --quiet || git commit -m "chore: update ticket price state"
+          git push

@@ -1,0 +1,8 @@
+{
+  "team": "Seattle Seahawks",
+  "opponents": ["Patriots", "Chargers", "49ers", "Chiefs", "Bears", "Cowboys", "Rams"],
+  "quantity": 2,
+  "max_price_per_ticket": null,
+  "include_fees": true,
+  "custom_event_pages": {}
+}
