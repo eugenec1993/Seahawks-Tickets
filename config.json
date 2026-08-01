@@ -2,7 +2,19 @@
   "team": "Seattle Seahawks",
   "opponents": ["Patriots", "Chargers", "49ers", "Chiefs", "Bears", "Cowboys", "Rams"],
   "quantity": 2,
-  "max_price_per_ticket": null,
   "include_fees": true,
-  "custom_event_pages": {}
+  "price_limits": {
+    "charter_club": 300,
+    "sideline": 250,
+    "everything_else": 150
+  },
+  "custom_event_pages": {
+    "Patriots": [],
+    "Chargers": [],
+    "49ers": [],
+    "Chiefs": [],
+    "Bears": [],
+    "Cowboys": [],
+    "Rams": []
+  }
 }
