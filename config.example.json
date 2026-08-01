@@ -2,12 +2,24 @@
   "team": "Seattle Seahawks",
   "opponents": ["Patriots", "Chargers", "49ers", "Chiefs", "Bears", "Cowboys", "Rams"],
   "quantity": 2,
-  "max_price_per_ticket": null,
   "include_fees": true,
+  "price_limits": {
+    "charter_club": 300,
+    "sideline": 250,
+    "everything_else": 150
+  },
   "custom_event_pages": {
     "Patriots": [
-      {"source": "TickPick", "url": "https://www.tickpick.com/nfl/seattle-seahawks-tickets/"},
-      {"source": "Gametime", "url": "https://gametime.co/nfl-football/seattle-seahawks-tickets/performers/15"}
+      {
+        "source": "Marketplace name",
+        "category": "charter_club",
+        "url": "https://example.com/exact-patriots-game-charter-or-club-filter"
+      },
+      {
+        "source": "Marketplace name",
+        "category": "sideline",
+        "url": "https://example.com/exact-patriots-game-sideline-filter"
+      }
     ]
   }
 }
