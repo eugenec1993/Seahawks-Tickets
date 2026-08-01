@@ -15,7 +15,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check ticket sources and email new deals
         env:
-          ALERT_MAX_PRICE: ${{ secrets.ALERT_MAX_PRICE }}
           SMTP_HOST: smtp.gmail.com
           SMTP_USER: ${{ secrets.GMAIL_ADDRESS }}
           SMTP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
