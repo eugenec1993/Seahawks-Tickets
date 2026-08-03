@@ -3,10 +3,12 @@
   "opponents": ["Patriots", "Chargers", "49ers", "Chiefs", "Bears", "Cowboys", "Rams"],
   "quantity": 2,
   "include_fees": true,
-  "price_limits": {
-    "charter_club": 300,
-    "sideline": 250,
-    "everything_else": 150
+  "alert_on_first_match": true,
+  "games": [],
+  "alert_rules": {
+    "charter_club": {"max_price": 300, "drop_percent": 10, "repeat_drop_percent": 5, "cooldown_hours": 6},
+    "sideline": {"max_price": 250, "drop_percent": 12, "repeat_drop_percent": 5, "cooldown_hours": 6},
+    "everything_else": {"max_price": 150, "drop_percent": 15, "repeat_drop_percent": 5, "cooldown_hours": 6}
   },
   "custom_event_pages": {
     "Patriots": [],
