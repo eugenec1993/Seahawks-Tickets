@@ -1,29 +1,28 @@
 import unittest
+from datetime import datetime, timezone
 
-from tracker import EventPrice, alerts_to_send, extract_json_ld_prices
+from tracker import EventPrice, alerts_to_send, should_check_now
 
 
 class TrackerTests(unittest.TestCase):
-    def test_extracts_low_price_from_json_ld(self):
-        page = '<script type="application/ld+json">{"offers":{"lowPrice":"83.50"}}</script>'
-        self.assertEqual(extract_json_ld_prices(page), [83.5])
+    def setUp(self):
+        self.config = {"alert_rules": {"everything_else": {"max_price": 150, "drop_percent": 10, "repeat_drop_percent": 5, "cooldown_hours": 0}}, "alert_on_first_match": True}
+        self.now = datetime(2026, 8, 3, tzinfo=timezone.utc)
 
-    def test_alerts_use_the_matching_category_limit(self):
-        limits = {"charter_club": 300, "sideline": 250, "everything_else": 150}
-        prices = [
-            EventPrice("Rams", "SeatGeek", 299, "https://example.test", category="charter_club"),
-            EventPrice("Rams", "SeatGeek", 251, "https://example.test", category="sideline"),
-            EventPrice("Rams", "SeatGeek", 150, "https://example.test", category="everything_else"),
-        ]
-        alerts = alerts_to_send(prices, {}, limits)
-        self.assertEqual([item.category for item in alerts], ["charter_club", "everything_else"])
+    def test_alerts_when_price_falls_by_configured_percentage(self):
+        price = EventPrice("Rams", "SeatGeek", 135, "https://example.test")
+        state = {price.key: {"history": [{"price": 150, "observed_at": "2026-08-02T00:00:00+00:00"}]}}
+        self.assertEqual(len(alerts_to_send([price], state, self.config, self.now)), 1)
 
-    def test_alerts_only_for_new_lower_price(self):
-        price = EventPrice("Rams", "SeatGeek", 120, "https://example.test")
-        previous = {price.key: {"last_alerted_price": 125}}
-        self.assertEqual(alerts_to_send([price], previous, 130), [price])
-        previous[price.key] = {"last_alerted_price": 110}
-        self.assertEqual(alerts_to_send([price], previous, 130), [])
+    def test_does_not_repeat_without_another_meaningful_fall(self):
+        price = EventPrice("Rams", "SeatGeek", 135, "https://example.test")
+        state = {price.key: {"history": [{"price": 160, "observed_at": "2026-08-02T00:00:00+00:00"}], "last_alerted_price": 138}}
+        self.assertEqual(alerts_to_send([price], state, self.config, self.now), [])
+
+    def test_schedule_is_quarter_hour_only_in_final_week(self):
+        config = {"games": [{"kickoff": "2026-08-05T20:00:00Z"}]}
+        self.assertTrue(should_check_now(config, datetime(2026, 8, 3, 12, 15, tzinfo=timezone.utc)))
+        self.assertFalse(should_check_now({"games": []}, datetime(2026, 8, 3, 12, 15, tzinfo=timezone.utc)))
 
 
 if __name__ == "__main__":
