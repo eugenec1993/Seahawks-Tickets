@@ -1,51 +1,36 @@
-# Seahawks ticket deal alerts
+# Seahawks ticket price-drop alerts
 
-This GitHub Actions project checks Seahawks tickets for Patriots, Chargers, 49ers, Chiefs, Bears, Cowboys, and Rams, then emails only when a source reaches a new low at or below your configured per-ticket, all-in limit.
+The tracker checks the official Ticketmaster and SeatGeek APIs, plus any number
+of public marketplace event pages that expose JSON-LD offer prices. It emails a
+deal only after it is below its category cap and has fallen by the configured
+percentage from the prior 14-day high.
 
-It includes official API adapters for Ticketmaster and SeatGeek, plus unlimited structured event-page adapters. Add direct event URLs for TickPick, Gametime, StubHub, Vivid Seats, TicketCity, or any other marketplace whose event page publishes a JSON-LD offer price. This avoids bypassing logins, CAPTCHAs, or marketplace access controls.
+## Supported sources
 
-## Your alert limits
+Official adapters: Ticketmaster and SeatGeek.
 
-The included `config.json` is already configured for two adjacent seats with these all-in, per-ticket maximums:
+Public structured-page adapters: StubHub, Vivid Seats, TickPick, Gametime,
+TicketCity, TicketNetwork, TicketSmarter, SeatPick, AXS, Viagogo, and any other
+marketplace event page that actually returns JSON-LD prices without a login.
+Add its exact Seahawks game URL under `custom_event_pages`. Use a page filtered
+for the required two adjacent seats and seating category. The tracker does not
+bypass logins, CAPTCHAs, anti-bot controls, or marketplace terms.
 
-| Seat category | Maximum |
-| --- | ---: |
-| Charter / club | $300 |
-| Sideline | $250 |
-| Everything else | $150 |
+## Rules and frequency
 
-The official Ticketmaster and SeatGeek API results are event-wide low prices, so they are checked as `everything_else`. For Charter/Club or sideline alerts, add a filtered, exact-game marketplace URL to `custom_event_pages` and set its `category` to `charter_club` or `sideline`. The URL must show only the desired seat category.
+Configure `alert_rules` with a price cap and `drop_percent` per category.
+`repeat_drop_percent` prevents repeat emails until a newly lower price is seen,
+and `cooldown_hours` is an additional guard.
 
-## One-time setup
+Add each kickoff (UTC) under `games`. The GitHub Action wakes every 15 minutes,
+but the tracker only makes source requests at the top of each hour until a
+configured kickoff is seven days away. It then requests prices every 15 minutes.
 
-1. In GitHub, open **Settings → Secrets and variables → Actions**, then add these repository secrets:
+## Setup
 
-   | Secret | Value |
-   | --- | --- |
-   | `GMAIL_ADDRESS` | Gmail address that sends the alert |
-   | `GMAIL_APP_PASSWORD` | A [Google App Password](https://myaccount.google.com/apppasswords), not your regular Gmail password |
-   | `ALERT_TO` | Email address that receives alerts |
-   | `TICKETMASTER_API_KEY` | Optional Ticketmaster Discovery API key |
-   | `SEATGEEK_CLIENT_ID` | Optional SeatGeek Platform API client ID |
-
-   `ALERT_MAX_PRICE` is no longer used; remove it or leave it blank so it does not override the category rules.
-
-2. Edit `config.json` to add exact-game, category-filtered marketplace URLs. Use `config.example.json` as the schema reference.
-3. Go to **Actions → Seahawks ticket alerts → Run workflow** to test it. Scheduled checks run every six hours; GitHub Actions may delay scheduled jobs during heavy platform load.
-
-## Source coverage
-
-| Source | Setup | Alert category |
-| --- | --- | --- |
-| Ticketmaster | `TICKETMASTER_API_KEY` | Everything else (event-wide listed minimum) |
-| SeatGeek | `SEATGEEK_CLIENT_ID` | Everything else (event-wide lowest listing) |
-| TickPick, Gametime, StubHub, Vivid Seats, TicketCity, etc. | Add an exact filtered event page under `custom_event_pages` | The `category` you assign to that URL |
-
-Marketplace fees vary. Prefer pages that show all-in pricing. The state file is committed after each run, so the same category/listing price does not repeatedly email you; a newly lower price will.
-
-## Local test
-
-```sh
-python -m unittest discover -s tests
-python tracker.py --dry-run
-```
+1. Copy `config.example.json` to `config.json`, replace the example URLs, and
+   add all Seahawks kickoff times.
+2. Add `GMAIL_ADDRESS`, `GMAIL_APP_PASSWORD`, `ALERT_TO`,
+   `TICKETMASTER_API_KEY`, and `SEATGEEK_CLIENT_ID` in GitHub Actions secrets.
+3. Run `python -m unittest discover -s tests`, then trigger the workflow
+   manually once to validate source access and email delivery.
