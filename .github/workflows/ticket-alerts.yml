@@ -1,8 +1,10 @@
 name: Seahawks ticket alerts
 
 on:
+  # The tracker does source requests hourly, except in the final week before a
+  # configured kickoff, when it requests them every 15 minutes.
   schedule:
-    - cron: "17 */6 * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -15,7 +17,7 @@ jobs:
       - uses: actions/checkout@v5
       - name: Run tracker tests
         run: python -m unittest discover -s tests
-      - name: Check ticket sources and email new deals
+      - name: Check ticket sources and email price drops
         env:
           SMTP_HOST: smtp.gmail.com
           SMTP_USER: ${{ secrets.GMAIL_ADDRESS }}
@@ -23,7 +25,7 @@ jobs:
           ALERT_TO: ${{ secrets.ALERT_TO }}
           TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
           SEATGEEK_CLIENT_ID: ${{ secrets.SEATGEEK_CLIENT_ID }}
-        run: python tracker.py
+        run: python tracker.py --scheduled
       - name: Persist observed prices and alert history
         run: |
           git config user.name "github-actions[bot]"
